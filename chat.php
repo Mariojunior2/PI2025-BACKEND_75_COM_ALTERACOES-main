@@ -1,163 +1,84 @@
 <?php
-// Start session for potential future use
 session_start();
+require 'includes/conexao.php';
+require 'functions/chat_functions.php';
 
-// Get conversation ID from URL parameter (default to 0 if not set)
-$active_conversation_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
-
-// Dummy data for conversations
-$conversations = [
-    0 => [
-        'id' => 0,
-        'name' => 'Ana Paula',
-        'avatar' => 'https://i.pravatar.cc/150?img=5',
-        'message' => 'Oi! Vi que você também cur...',
-        'time' => '10:42',
-        'unread' => 2,
-        'online' => true,
-        'status' => 'Online',
-        'messages' => [
-            [
-                'content' => 'Oi! Tudo bem?',
-                'time' => '10:30',
-                'isReceiver' => false
-            ],
-            [
-                'content' => 'Oi! Tudo ótimo e com você?',
-                'time' => '10:32',
-                'isReceiver' => true
-            ],
-            [
-                'content' => 'Bem também! Vi que você se interessa por IA',
-                'time' => '10:35',
-                'isReceiver' => false
-            ],
-            [
-                'content' => 'Sim! Estou estudando bastante sobre o assunto',
-                'time' => '10:38',
-                'isReceiver' => true
-            ],
-            [
-                'content' => 'Que legal! Eu trabalho com isso',
-                'time' => '10:40',
-                'isReceiver' => false
-            ],
-            [
-                'content' => 'Você já conhece o GPT-4?',
-                'time' => '10:42',
-                'isReceiver' => false
-            ]
-        ]
-    ],
-    1 => [
-        'id' => 1,
-        'name' => 'Carlos Eduardo',
-        'avatar' => 'https://i.pravatar.cc/150?img=12',
-        'message' => 'Vamos marcar aquele café para c...',
-        'time' => '09:15',
-        'unread' => 0,
-        'online' => true,
-        'status' => 'Há 30 minutos',
-        'messages' => [
-            [
-                'content' => 'E aí, como está o projeto?',
-                'time' => '09:10',
-                'isReceiver' => false
-            ],
-            [
-                'content' => 'Está avançando! Consegui terminar aquela parte difícil',
-                'time' => '09:12',
-                'isReceiver' => true
-            ],
-            [
-                'content' => 'Ótimo! Vamos marcar aquele café para conversar sobre?',
-                'time' => '09:15',
-                'isReceiver' => false
-            ]
-        ]
-    ],
-    2 => [
-        'id' => 2,
-        'name' => 'Grupo de Desenvolvedores',
-        'avatar' => 'https://i.pravatar.cc/150?img=32',
-        'message' => 'Alguém já experimentou o n...',
-        'time' => 'Ontem',
-        'unread' => 5,
-        'online' => true,
-        'status' => 'Online',
-        'messages' => [
-            [
-                'content' => 'Pessoal, alguém tem experiência com Docker?',
-                'time' => '18:20',
-                'isReceiver' => false,
-                'sender' => 'Marcos Silva'
-            ],
-            [
-                'content' => 'Sim, uso bastante. O que precisa saber?',
-                'time' => '18:25',
-                'isReceiver' => false,
-                'sender' => 'Juliana Santos'
-            ],
-            [
-                'content' => 'Estou com um problema com volumes persistentes',
-                'time' => '18:28',
-                'isReceiver' => false,
-                'sender' => 'Marcos Silva'
-            ],
-            [
-                'content' => 'Alguém já experimentou o novo framework?',
-                'time' => '19:10',
-                'isReceiver' => false,
-                'sender' => 'Ricardo Almeida'
-            ],
-            [
-                'content' => 'Ainda não, mas ouvi falar bem',
-                'time' => '19:15',
-                'isReceiver' => true
-            ]
-        ]
-    ],
-    3 => [
-        'id' => 3,
-        'name' => 'Mariana Silva',
-        'avatar' => 'https://i.pravatar.cc/150?img=23',
-        'message' => 'Chat temporário - expira em 8h',
-        'time' => '16:20',
-        'unread' => 0,
-        'online' => true,
-        'status' => 'Online',
-        'messages' => [
-            [
-                'content' => 'Oi Mariana, tudo bem?',
-                'time' => '16:10',
-                'isReceiver' => true
-            ],
-            [
-                'content' => 'Tudo ótimo! Precisava de ajuda com aquele projeto',
-                'time' => '16:12',
-                'isReceiver' => false
-            ],
-            [
-                'content' => 'Claro, estou disponível para ajudar',
-                'time' => '16:14',
-                'isReceiver' => true
-            ],
-            [
-                'content' => 'Lembrando que este chat é temporário - expira em 8h',
-                'time' => '16:20',
-                'isReceiver' => false
-            ]
-        ]
-    ]
-];
-
-// Ensure the conversation ID is valid
-if (!isset($conversations[$active_conversation_id])) {
-    $active_conversation_id = 0;
+// Verifica se o usuário está logado
+if (!isset($_SESSION['usuario_id'])) {
+    header('Location: login.php');
+    exit;
 }
 
-// Current selected conversation
-$current_conversation = $conversations[$active_conversation_id];
+$usuarioAtualId = $_SESSION['usuario_id'];
+
+// Processar envio de mensagem
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['conteudo'])) {
+    $conteudo = trim($_POST['conteudo']);
+    
+    if (!empty($conteudo)) {
+        if (isset($_POST['conversa_id'])) {
+            enviarMensagem($pdo, $_POST['conversa_id'], $usuarioAtualId, $conteudo);
+            $active_conversation_id = $_POST['conversa_id'];
+        } elseif (isset($_POST['grupo_id'])) {
+            enviarMensagemGrupo($pdo, $_POST['grupo_id'], $usuarioAtualId, $conteudo);
+            $active_group_id = $_POST['grupo_id'];
+        }
+    }
+    
+    // Redireciona para evitar reenvio ao atualizar
+    if (isset($active_conversation_id)) {
+        header("Location: chat.php?id=$active_conversation_id");
+    } elseif (isset($active_group_id)) {
+        header("Location: chat.php?grupo_id=$active_group_id");
+    } else {
+        header("Location: chat.php");
+    }
+    exit;
+}
+
+// Obter conversa ativa
+$active_conversation_id = 0;
+$active_group_id = 0;
+$outroUsuario = null;
+$grupoAtivo = null;
+
+if (isset($_GET['id'])) {
+    $active_conversation_id = intval($_GET['id']);
+} elseif (isset($_GET['grupo_id'])) {
+    $active_group_id = intval($_GET['grupo_id']);
+} elseif (isset($_GET['usuario_id'])) {
+    $outroUsuarioId = intval($_GET['usuario_id']);
+    $active_conversation_id = criarOuBuscarConversa($pdo, $usuarioAtualId, $outroUsuarioId);
+}
+
+// Buscar conversas e grupos do usuário
+$conversasPrivadas = buscarConversasUsuario($pdo, $usuarioAtualId);
+$grupos = buscarGruposUsuario($pdo, $usuarioAtualId);
+$conversations = array_merge($conversasPrivadas, $grupos);
+
+// Ordenar por data da última mensagem
+usort($conversations, function($a, $b) {
+    $timeA = strtotime($a['ultima_mensagem_data'] ?? '1970-01-01');
+    $timeB = strtotime($b['ultima_mensagem_data'] ?? '1970-01-01');
+    return $timeB - $timeA;
+});
+
+// Buscar mensagens
+$mensagens = [];
+if ($active_conversation_id > 0) {
+    $mensagens = buscarMensagensConversa($pdo, $active_conversation_id, $usuarioAtualId);
+    $outroUsuario = buscarOutroUsuarioConversa($pdo, $active_conversation_id, $usuarioAtualId);
+} elseif ($active_group_id > 0) {
+    $mensagens = buscarMensagensGrupo($pdo, $active_group_id, $usuarioAtualId);
+    $grupoAtivo = buscarGrupo($pdo, $active_group_id);
+}
+
+// Gerar avatar com base no nome
+function gerarAvatar($nome) {
+    $nomeCodificado = urlencode($nome);
+    $cor = substr(md5($nome), 0, 6);
+    return "https://ui-avatars.com/api/?name=$nomeCodificado&background=$cor&color=fff";
+}
 ?>
 
 <!DOCTYPE html>
@@ -166,22 +87,42 @@ $current_conversation = $conversations[$active_conversation_id];
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mensagens - TydraPI</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <link rel="stylesheet" href="css/chat.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         .sidebar {
             position: fixed;
+            width: 20%;
+        }
+        
+        /* Estilos para grupos */
+        .group-indicator {
+            background-color: #800000;
+            color: white;
+            border-radius: 10px;
+            padding: 2px 8px;
+            font-size: 0.75rem;
+            margin-left: 5px;
+        }
+        
+        .message-sender-name {
+            font-weight: 600;
+            margin-bottom: 3px;
+            color: #555;
+        }
+        
+        .group-header-members {
+            font-size: 0.85rem;
+            color: #777;
         }
     </style>
     <?php include 'includes/header.php' ?>
 </head>
 <body>
-    <?php include 'includes/sidebar.php'?>
+    <?php include 'includes/sidebar.php' ?>
     
     <div class="chat-container">
-        <!-- Sidebar/Conversations List -->
+        <!-- Lista de conversas -->
         <div class="conversation-list">
             <div class="conversation-list-header">
                 Mensagens
@@ -190,26 +131,42 @@ $current_conversation = $conversations[$active_conversation_id];
                 <input type="text" class="search-bar" placeholder="Buscar contatos..." aria-label="Buscar">
             </div>
             
-            <!-- Conversation Items -->
-            <?php foreach ($conversations as $conversation): ?>
-                <a href="?id=<?php echo $conversation['id']; ?>" class="text-decoration-none">
-                    <div class="conversation-item <?php echo ($conversation['id'] === $active_conversation_id) ? 'active' : ''; ?>">
+            <!-- Conversas e Grupos -->
+            <?php foreach ($conversations as $conversa): ?>
+                <?php 
+                // Determina se é um grupo verificando se existe o campo específico de grupos
+                $isGroup = isset($conversa['tipo']) && $conversa['tipo'] === 'grupo';
+                ?>
+                <a href="<?= $isGroup ? 'chat.php?grupo_id='.$conversa['id'] : 'chat.php?id='.$conversa['id'] ?>" class="text-decoration-none">
+                    <div class="conversation-item <?= 
+                        ($isGroup && $active_group_id == $conversa['id']) || 
+                        (!$isGroup && $active_conversation_id == $conversa['id']) ? 'active' : '' 
+                    ?>">
                         <div class="avatar-wrapper">
-                            <div class="avatar">
-                                <img src="<?php echo htmlspecialchars($conversation['avatar']); ?>" alt="<?php echo htmlspecialchars($conversation['name']); ?>">
-                            </div>
-                            <?php if ($conversation['online']): ?>
+                            <img src="<?= gerarAvatar($conversa['nome']) ?>" 
+                                 alt="<?= htmlspecialchars($conversa['nome']) ?>" 
+                                 class="avatar">
+                            <?php if (!$isGroup): ?>
                                 <div class="online-indicator"></div>
                             <?php endif; ?>
                         </div>
                         <div class="conversation-info">
-                            <div class="conversation-name"><?php echo htmlspecialchars($conversation['name']); ?></div>
-                            <div class="conversation-message"><?php echo htmlspecialchars($conversation['message']); ?></div>
+                            <div class="conversation-name">
+                                <?= htmlspecialchars($conversa['nome']) ?>
+                                <?php if ($isGroup): ?>
+                                    <span class="group-indicator">Grupo</span>
+                                <?php endif; ?>
+                            </div>
+                            <div class="conversation-message">
+                                <?= htmlspecialchars($conversa['ultima_mensagem'] ?? 'Sem mensagens') ?>
+                            </div>
                         </div>
                         <div class="conversation-meta">
-                            <div class="timestamp"><?php echo htmlspecialchars($conversation['time']); ?></div>
-                            <?php if ($conversation['unread'] > 0): ?>
-                                <div class="unread-badge"><?php echo $conversation['unread']; ?></div>
+                            <div class="timestamp">
+                                <?= $conversa['ultima_mensagem_data'] ? date('H:i', strtotime($conversa['ultima_mensagem_data'])) : '' ?>
+                            </div>
+                            <?php if ($conversa['nao_lidas'] > 0): ?>
+                                <div class="unread-badge"><?= $conversa['nao_lidas'] ?></div>
                             <?php endif; ?>
                         </div>
                     </div>
@@ -217,115 +174,191 @@ $current_conversation = $conversations[$active_conversation_id];
             <?php endforeach; ?>
         </div>
         
-        <!-- Chat Area -->
+        <!-- Área de chat -->
         <div class="chat-area">
-            <!-- Chat Header - Always visible -->
-            <div class="chat-header">
-                <div class="chat-header-info">
-                    <div class="avatar-wrapper">
-                        <div class="avatar">
-                            <img src="<?php echo htmlspecialchars($current_conversation['avatar']); ?>" alt="<?php echo htmlspecialchars($current_conversation['name']); ?>">
-                        </div>
-                        <?php if ($current_conversation['online']): ?>
+            <?php if ($active_conversation_id > 0 && $outroUsuario): ?>
+                <!-- Cabeçalho do chat privado -->
+                <div class="chat-header">
+                    <div class="chat-header-info">
+                        <div class="avatar-wrapper">
+                            <img src="<?= gerarAvatar($outroUsuario['nome']) ?>" 
+                                 alt="<?= htmlspecialchars($outroUsuario['nome']) ?>" 
+                                 class="avatar">
                             <div class="online-indicator"></div>
-                        <?php endif; ?>
-                    </div>
-                    <div class="chat-header-name"><?php echo htmlspecialchars($current_conversation['name']); ?></div>
-                    <div class="chat-status"><?php echo htmlspecialchars($current_conversation['status']); ?></div>
-                </div>
-                <div class="chat-actions">
-                    <button class="chat-action-btn">
-                        <i class="fas fa-phone-alt"></i>
-                    </button>
-                    <button class="chat-action-btn">
-                        <i class="fas fa-video"></i>
-                    </button>
-                    <button class="chat-action-btn">
-                        <i class="fas fa-ellipsis-v"></i>
-                    </button>
-                </div>
-            </div>
-            
-            <!-- Message Area - Changes based on selected conversation -->
-            <div id="messageArea" class="message-area">
-                <?php foreach ($current_conversation['messages'] as $message): ?>
-                    <div class="message <?php echo $message['isReceiver'] ? 'message-receiver' : 'message-sender'; ?>">
-                        <div class="message-content">
-                            <?php echo htmlspecialchars($message['content']); ?>
                         </div>
-                        <div class="message-time"><?php echo htmlspecialchars($message['time']); ?></div>
+                        <div>
+                            <div class="chat-header-name"><?= htmlspecialchars($outroUsuario['nome']) ?></div>
+                            <div class="chat-status">Online</div>
+                        </div>
                     </div>
-                <?php endforeach; ?>
-            </div>
-            
-            <!-- Message Input Area - Always the same -->
-            <div class="message-input-area">
-                <button class="message-action-btn">
-                    <i class="far fa-image"></i>
-                </button>
-                <input type="text" class="message-input" placeholder="Digite sua mensagem..." aria-label="Mensagem">
-                <button class="message-action-btn">
-                    <i class="fas fa-microphone"></i>
-                </button>
-                <button class="message-action-btn send-btn" id="sendMessageBtn">
-                    <i class="fas fa-paper-plane"></i>
-                </button>
-            </div>
+                    <div class="chat-actions">
+                        <button class="chat-action-btn">
+                            <i class="fas fa-phone-alt"></i>
+                        </button>
+                        <button class="chat-action-btn">
+                            <i class="fas fa-video"></i>
+                        </button>
+                        <button class="chat-action-btn">
+                            <i class="fas fa-ellipsis-v"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Área de mensagens -->
+                <div id="messageArea" class="message-area">
+                    <?php foreach ($mensagens as $mensagem): ?>
+                        <div class="message <?= $mensagem['remetente_id'] == $usuarioAtualId ? 'message-sender' : 'message-receiver' ?>">
+                            <div class="message-content">
+                                <?= htmlspecialchars($mensagem['conteudo']) ?>
+                            </div>
+                            <div class="message-time">
+                                <?= date('H:i', strtotime($mensagem['data_envio'])) ?>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+                
+                <!-- Área de entrada de mensagem -->
+                <form method="POST" class="message-input-area">
+                    <input type="hidden" name="conversa_id" value="<?= $active_conversation_id ?>">
+                    
+                    <button type="button" class="message-action-btn">
+                        <i class="far fa-image"></i>
+                    </button>
+                    
+                    <input type="text" name="conteudo" class="message-input" 
+                           placeholder="Digite sua mensagem..." aria-label="Mensagem" required>
+                    
+                    <button type="button" class="message-action-btn">
+                        <i class="fas fa-microphone"></i>
+                    </button>
+                    
+                    <button type="submit" class="message-action-btn send-btn">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </form>
+            <?php elseif ($active_group_id > 0 && $grupoAtivo): ?>
+                <!-- Cabeçalho do grupo -->
+                <div class="chat-header">
+                    <div class="chat-header-info">
+                        <div class="avatar-wrapper">
+                            <img src="<?= gerarAvatar($grupoAtivo['nome']) ?>" 
+                                 alt="<?= htmlspecialchars($grupoAtivo['nome']) ?>" 
+                                 class="avatar">
+                        </div>
+                        <div>
+                            <div class="chat-header-name"><?= htmlspecialchars($grupoAtivo['nome']) ?></div>
+                            <div class="group-header-members">
+                                <?php 
+                                    $membros = buscarMembrosGrupo($pdo, $grupoAtivo['id']);
+                                    echo count($membros) . " membros";
+                                ?>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chat-actions">
+                        <button class="chat-action-btn">
+                            <i class="fas fa-ellipsis-v"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Área de mensagens do grupo -->
+                <div id="messageArea" class="message-area">
+                    <?php foreach ($mensagens as $mensagem): ?>
+                        <div class="message <?= $mensagem['remetente_id'] == $usuarioAtualId ? 'message-sender' : 'message-receiver' ?>">
+                            <?php if ($mensagem['remetente_id'] != $usuarioAtualId): ?>
+                                <div class="message-sender-name"><?= htmlspecialchars($mensagem['remetente_nome']) ?></div>
+                            <?php endif; ?>
+                            <div class="message-content">
+                                <?= htmlspecialchars($mensagem['conteudo']) ?>
+                            </div>
+                            <div class="message-time">
+                                <?= date('H:i', strtotime($mensagem['data_envio'])) ?>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+                
+                <!-- Área de entrada de mensagem do grupo -->
+                <form method="POST" class="message-input-area">
+                    <input type="hidden" name="grupo_id" value="<?= $active_group_id ?>">
+                    
+                    <button type="button" class="message-action-btn">
+                        <i class="far fa-image"></i>
+                    </button>
+                    
+                    <input type="text" name="conteudo" class="message-input" 
+                           placeholder="Digite sua mensagem..." aria-label="Mensagem" required>
+                    
+                    <button type="button" class="message-action-btn">
+                        <i class="fas fa-microphone"></i>
+                    </button>
+                    
+                    <button type="submit" class="message-action-btn send-btn">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </form>
+            <?php else: ?>
+                <!-- Tela quando nenhuma conversa está selecionada -->
+                <div class="empty-chat">
+                    <div class="empty-chat-icon">
+                        <i class="fas fa-comments"></i>
+                    </div>
+                    <h3 class="empty-chat-title">Selecione uma conversa</h3>
+                    <p>Escolha uma conversa existente ou inicie uma nova</p>
+                </div>
+            <?php endif; ?>
         </div>
     </div>
 
     <script>
-        // Store conversation ID for message sending
-        const activeConversationId = <?php echo $active_conversation_id; ?>;
-        
-        // Function to add new message to chat
-        function addMessage(content, isReceiver = false) {
+        // Rolagem automática para a última mensagem
+        function scrollToBottom() {
             const messageArea = document.getElementById('messageArea');
-            const now = new Date();
-            const hours = now.getHours().toString().padStart(2, '0');
-            const minutes = now.getMinutes().toString().padStart(2, '0');
-            const timeString = `${hours}:${minutes}`;
-            
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${isReceiver ? 'message-receiver' : 'message-sender'}`;
-            
-            messageDiv.innerHTML = `
-                <div class="message-content">
-                    ${content}
-                </div>
-                <div class="message-time">${timeString}</div>
-            `;
-            
-            messageArea.appendChild(messageDiv);
-            messageArea.scrollTop = messageArea.scrollHeight;
-            
-            // In a real application, you would send this message to the server
-            // and associate it with the current conversation
-            console.log(`Message sent to conversation ${activeConversationId}: ${content}`);
+            if (messageArea) {
+                messageArea.scrollTop = messageArea.scrollHeight;
+            }
         }
         
-        // Event listener for input field
-        document.querySelector('.message-input').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter' && this.value.trim() !== '') {
-                addMessage(this.value, true);
-                this.value = '';
-            }
+        // Enviar mensagem com AJAX
+        document.querySelectorAll('form').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const form = this;
+                const formData = new FormData(form);
+                const input = form.querySelector('input[name="conteudo"]');
+                
+                if (input.value.trim() === '') return;
+                
+                fetch('chat.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    if (response.ok) {
+                        // Recarregar a página para atualizar as mensagens
+                        location.reload();
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro ao enviar mensagem:', error);
+                });
+            });
         });
         
-        // Event listener for send button
-        document.querySelector('#sendMessageBtn').addEventListener('click', function() {
-            const input = document.querySelector('.message-input');
-            if (input.value.trim() !== '') {
-                addMessage(input.value, true);
-                input.value = '';
-            }
-        });
+        // Rolagem para baixo ao carregar
+        window.addEventListener('load', scrollToBottom);
         
-        // Scroll to bottom of message area on load
-        window.onload = function() {
-            const messageArea = document.getElementById('messageArea');
-            messageArea.scrollTop = messageArea.scrollHeight;
-        };
+        // Enviar com Enter
+        document.querySelectorAll('.message-input').forEach(input => {
+            input.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    this.form.dispatchEvent(new Event('submit'));
+                }
+            });
+        });
     </script>
 </body>
 </html>

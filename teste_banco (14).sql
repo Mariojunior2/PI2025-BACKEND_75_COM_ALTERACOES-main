@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Tempo de geração: 08/08/2025 às 14:19
+-- Tempo de geração: 14/08/2025 às 21:06
 -- Versão do servidor: 10.4.32-MariaDB
 -- Versão do PHP: 8.1.25
 
@@ -20,6 +20,29 @@ SET time_zone = "+00:00";
 --
 -- Banco de dados: `teste_banco`
 --
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura para tabela `conversas`
+--
+
+CREATE TABLE `conversas` (
+  `id` int(11) NOT NULL,
+  `usuario1_id` int(10) UNSIGNED NOT NULL,
+  `usuario2_id` int(10) UNSIGNED NOT NULL,
+  `data_criacao` datetime DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Despejando dados para a tabela `conversas`
+--
+
+INSERT INTO `conversas` (`id`, `usuario1_id`, `usuario2_id`, `data_criacao`) VALUES
+(1, 11, 1, '2025-08-14 13:31:55'),
+(2, 11, 2, '2025-08-14 13:31:55'),
+(3, 11, 12, '2025-08-14 13:31:55'),
+(4, 11, 10, '2025-08-14 13:37:40');
 
 -- --------------------------------------------------------
 
@@ -95,7 +118,8 @@ INSERT INTO `grupos` (`id`, `nome`, `descricao`, `criador_id`, `data_criacao`) V
 (13, 'Grupo2', 'Grupo2', 11, '2025-08-07 16:13:35'),
 (14, 'Grupo3', 'Grupo3', 11, '2025-08-07 16:13:42'),
 (15, 'Grupo4', 'Grupo4', 11, '2025-08-07 16:13:50'),
-(16, 'Grupo5', 'Grupo5', 11, '2025-08-07 16:14:02');
+(16, 'Grupo5', 'Grupo5', 11, '2025-08-07 16:14:02'),
+(17, 'Grupo99', 'Grupo99', 11, '2025-08-13 14:20:16');
 
 -- --------------------------------------------------------
 
@@ -148,7 +172,40 @@ INSERT INTO `grupo_membros` (`grupo_id`, `usuario_id`, `data_ingresso`) VALUES
 (13, 11, '2025-08-07 16:13:35'),
 (14, 11, '2025-08-07 16:13:42'),
 (15, 11, '2025-08-07 16:13:50'),
-(16, 11, '2025-08-07 16:14:02');
+(16, 11, '2025-08-07 16:14:02'),
+(16, 12, '2025-08-08 08:06:28'),
+(17, 11, '2025-08-13 14:20:16'),
+(17, 12, '2025-08-14 14:11:41');
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura para tabela `grupo_visualizacoes`
+--
+
+CREATE TABLE `grupo_visualizacoes` (
+  `grupo_id` int(11) NOT NULL,
+  `usuario_id` int(10) UNSIGNED NOT NULL,
+  `ultima_visualizacao` int(11) DEFAULT 0,
+  `data_atualizacao` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Despejando dados para a tabela `grupo_visualizacoes`
+--
+
+INSERT INTO `grupo_visualizacoes` (`grupo_id`, `usuario_id`, `ultima_visualizacao`, `data_atualizacao`) VALUES
+(1, 11, 0, '2025-08-14 14:12:44'),
+(2, 11, 0, '2025-08-14 14:12:44'),
+(3, 11, 0, '2025-08-14 14:12:28'),
+(3, 12, 0, '2025-08-14 14:11:59'),
+(4, 11, 0, '2025-08-14 14:12:30'),
+(5, 11, 0, '2025-08-14 14:57:44'),
+(6, 11, 0, '2025-08-14 14:34:56'),
+(16, 11, 12, '2025-08-14 16:00:11'),
+(16, 12, 9, '2025-08-14 15:52:02'),
+(17, 11, 10, '2025-08-14 15:53:47'),
+(17, 12, 7, '2025-08-14 15:51:48');
 
 -- --------------------------------------------------------
 
@@ -194,6 +251,89 @@ CREATE TABLE `material_avaliacoes` (
 -- --------------------------------------------------------
 
 --
+-- Estrutura para tabela `mensagens`
+--
+
+CREATE TABLE `mensagens` (
+  `id` int(11) NOT NULL,
+  `conversa_id` int(11) NOT NULL,
+  `remetente_id` int(10) UNSIGNED NOT NULL,
+  `conteudo` text NOT NULL,
+  `data_envio` datetime DEFAULT current_timestamp(),
+  `lida` tinyint(1) DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Despejando dados para a tabela `mensagens`
+--
+
+INSERT INTO `mensagens` (`id`, `conversa_id`, `remetente_id`, `conteudo`, `data_envio`, `lida`) VALUES
+(1, 1, 11, 'Olá administrador, preciso de ajuda com meu perfil', '2025-08-14 13:31:55', 0),
+(2, 1, 1, 'Claro Mario, no que posso ajudar?', '2025-08-14 13:31:55', 1),
+(3, 1, 11, 'Não consigo editar minhas informações pessoais', '2025-08-14 13:31:55', 0),
+(4, 1, 1, 'Vou verificar isso para você', '2025-08-14 13:31:55', 1),
+(5, 2, 11, 'Oi João, você tem o material de Docker?', '2025-08-14 13:31:55', 0),
+(6, 2, 2, 'Sim Mario, vou te enviar o link', '2025-08-14 13:31:55', 1),
+(7, 2, 2, 'https://drive.com/normalizacao.pdf', '2025-08-14 13:31:55', 1),
+(8, 3, 12, 'Oi Mario, tudo bem?', '2025-08-14 13:31:55', 1),
+(9, 3, 11, 'Tudo sim Asdrubal! E com você?', '2025-08-14 13:31:55', 1),
+(10, 3, 12, 'Estou estudando PHP, tem alguma dica?', '2025-08-14 13:31:55', 1),
+(11, 4, 11, 'Opa', '2025-08-14 13:37:45', 0),
+(12, 3, 11, 'Oi', '2025-08-14 13:38:03', 1),
+(13, 3, 12, 'Olá', '2025-08-14 13:59:16', 1),
+(14, 3, 12, 'Olá', '2025-08-14 13:59:16', 1),
+(15, 3, 12, 'vish', '2025-08-14 13:59:21', 1),
+(16, 3, 12, 'vish', '2025-08-14 13:59:21', 1),
+(17, 3, 12, 'A', '2025-08-14 13:59:28', 1),
+(18, 3, 12, 'A', '2025-08-14 13:59:28', 1),
+(19, 3, 12, 'Uma', '2025-08-14 13:59:42', 1),
+(20, 3, 12, 'Uma', '2025-08-14 13:59:42', 1),
+(21, 3, 12, 'duas', '2025-08-14 13:59:54', 1),
+(22, 3, 12, 'duas', '2025-08-14 13:59:54', 1),
+(23, 3, 12, 'a', '2025-08-14 14:00:31', 1),
+(24, 3, 12, 'aa', '2025-08-14 14:00:40', 1),
+(25, 3, 12, 'p', '2025-08-14 14:00:46', 1),
+(26, 3, 12, 'p', '2025-08-14 14:00:46', 1),
+(27, 2, 11, 'opa', '2025-08-14 14:57:18', 0),
+(28, 2, 11, 'opa', '2025-08-14 14:57:18', 0),
+(29, 2, 11, 'a', '2025-08-14 15:25:32', 0),
+(30, 2, 11, 'a', '2025-08-14 15:25:32', 0);
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura para tabela `mensagens_grupo`
+--
+
+CREATE TABLE `mensagens_grupo` (
+  `id` int(11) NOT NULL,
+  `grupo_id` int(11) NOT NULL,
+  `remetente_id` int(10) UNSIGNED NOT NULL,
+  `conteudo` text NOT NULL,
+  `data_envio` datetime DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Despejando dados para a tabela `mensagens_grupo`
+--
+
+INSERT INTO `mensagens_grupo` (`id`, `grupo_id`, `remetente_id`, `conteudo`, `data_envio`) VALUES
+(1, 17, 12, 'Olá', '2025-08-14 14:11:49'),
+(2, 17, 12, 'Olá', '2025-08-14 14:11:49'),
+(3, 17, 12, 'ola', '2025-08-14 14:11:55'),
+(4, 17, 11, 'vish', '2025-08-14 14:12:37'),
+(5, 17, 11, 'digitei isso no Mario Gonçalves', '2025-08-14 15:50:26'),
+(6, 17, 12, 'oi', '2025-08-14 15:51:48'),
+(7, 17, 12, 'oi', '2025-08-14 15:51:48'),
+(8, 16, 12, 'Muito bom', '2025-08-14 15:52:02'),
+(9, 16, 12, 'Muito bom', '2025-08-14 15:52:02'),
+(10, 17, 11, 'amem', '2025-08-14 15:53:47'),
+(11, 16, 11, 'nice', '2025-08-14 15:59:11'),
+(12, 16, 11, 'a', '2025-08-14 16:00:11');
+
+-- --------------------------------------------------------
+
+--
 -- Estrutura para tabela `notificacoes`
 --
 
@@ -214,9 +354,7 @@ CREATE TABLE `notificacoes` (
 --
 
 INSERT INTO `notificacoes` (`id`, `title`, `message`, `date`, `time`, `type`, `priority`, `read`, `academicType`) VALUES
-(5, 'Novo Material Disponibilizado', 'Slides da aula 12 - Trigonometria disponíveis', '2025-08-08', '14:30:00', 'materials', 'high', 1, NULL),
-(6, 'Feriado Escolar', 'Dia 20 - Feriado municipal, não haverá aula', '2025-08-20', '00:00:00', 'calendar', 'low', 1, NULL),
-(7, 'Prova de Química', 'Prova bimestral capítulos 5-8 na próxima terça', '2025-08-12', '07:30:00', 'academic', 'high', 1, 'exam');
+(3, 'Material Disponível', 'O professor de Algoritmos disponibilizou o material para a próxima aula.', '2025-04-11', '16:20:00', 'materials', 'medium', 1, 'homework');
 
 -- --------------------------------------------------------
 
@@ -255,7 +393,7 @@ INSERT INTO `usuario` (`idusuario`, `matricula`, `idade`, `foto`, `email`, `nome
 (9, '2023008', 22, NULL, 'aluno8@email.com', 'Mariana Ribeiro', '$2y$10$ExemploDeHashMNO', '2025-05-30 09:12:35', 'ativo', '2025-05-30 09:12:35', '2025-05-30 09:12:35', 0),
 (10, '2023009', 19, NULL, 'aluno9@email.com', 'Ricardo Gomes', '$2y$10$ExemploDeHashPQR', '2025-05-30 09:12:35', 'ativo', '2025-05-30 09:12:35', '2025-05-30 09:12:35', 0),
 (11, 'U20256959', 0, NULL, 'mario.junior2@alunos.sc.senac.br', 'Mario Gonçalves', '$2y$10$iq7qXkniq8n0aE9m1xeEBeZHr/O.73LmsyHODFSKCv3HfMHvlz4Hm', '2025-07-04 09:12:24', 'ativo', '2025-07-04 09:12:24', '2025-08-07 08:34:35', 0),
-(12, 'U20250556', 0, NULL, 'asdrubal@gmail.com', 'asdrubal', '$2y$10$Yp9hyDURpT5/9EbSPuvR9uwt.UYM6ASUAZyXb/SZaTc2BI18eFpaK', '2025-08-08 08:20:18', 'ativo', '2025-08-08 08:20:18', '2025-08-08 08:20:18', 0);
+(12, 'U20253258', 0, NULL, 'mario@gmail.com', 'Mario Gonzales', '$2y$10$sC/U0Gtqw.btaL/WdkDeKeWahILaF/8zWB8tCAejE3wd0gkMkH6rC', '2025-08-08 08:05:22', 'ativo', '2025-08-08 08:05:22', '2025-08-08 08:05:22', 0);
 
 -- --------------------------------------------------------
 
@@ -311,7 +449,7 @@ INSERT INTO `usuario_config` (`id`, `usuario_id`, `bio`, `telefone`, `created_at
 (1, 1, 'Administrador do sistema com experiência em segurança de dados', '+55 11 91234-5678', '2025-07-09 17:49:50', '2025-07-09 17:49:50'),
 (2, 2, 'Professor de Banco de Dados com 10 anos de experiência', '+55 11 98765-4321', '2025-07-09 17:49:50', '2025-08-07 16:43:29'),
 (3, 11, 'homem masculino', '47988962224', '2025-07-14 17:01:40', '2025-08-07 19:56:44'),
-(4, 12, 'EU SOU O MAIOR ESTUDADOR DE SUPER PHP DO MUNDO ', '', '2025-08-08 11:21:50', '2025-08-08 11:21:53');
+(4, 12, 'Homem Lindao', '', '2025-08-08 11:07:08', '2025-08-08 11:07:08');
 
 -- --------------------------------------------------------
 
@@ -405,11 +543,20 @@ INSERT INTO `usuario_seguidores` (`seguidor_id`, `seguido_id`, `data_seguimento`
 (11, 5, '2025-08-07 16:11:41'),
 (11, 6, '2025-08-07 16:11:26'),
 (11, 7, '2025-08-07 16:11:07'),
-(12, 11, '2025-08-08 08:22:52');
+(11, 12, '2025-08-08 08:08:45'),
+(12, 11, '2025-08-08 08:06:46');
 
 --
 -- Índices para tabelas despejadas
 --
+
+--
+-- Índices de tabela `conversas`
+--
+ALTER TABLE `conversas`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `usuario1_id` (`usuario1_id`),
+  ADD KEY `usuario2_id` (`usuario2_id`);
 
 --
 -- Índices de tabela `eventos`
@@ -440,6 +587,13 @@ ALTER TABLE `grupo_membros`
   ADD KEY `usuario_id` (`usuario_id`);
 
 --
+-- Índices de tabela `grupo_visualizacoes`
+--
+ALTER TABLE `grupo_visualizacoes`
+  ADD PRIMARY KEY (`grupo_id`,`usuario_id`),
+  ADD KEY `grupo_visualizacoes_ibfk_2` (`usuario_id`);
+
+--
 -- Índices de tabela `materiais`
 --
 ALTER TABLE `materiais`
@@ -453,6 +607,22 @@ ALTER TABLE `material_avaliacoes`
   ADD PRIMARY KEY (`id`),
   ADD KEY `material_id` (`material_id`),
   ADD KEY `usuario_id` (`usuario_id`);
+
+--
+-- Índices de tabela `mensagens`
+--
+ALTER TABLE `mensagens`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `conversa_id` (`conversa_id`),
+  ADD KEY `remetente_id` (`remetente_id`);
+
+--
+-- Índices de tabela `mensagens_grupo`
+--
+ALTER TABLE `mensagens_grupo`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `grupo_id` (`grupo_id`),
+  ADD KEY `remetente_id` (`remetente_id`);
 
 --
 -- Índices de tabela `notificacoes`
@@ -508,6 +678,12 @@ ALTER TABLE `usuario_seguidores`
 --
 
 --
+-- AUTO_INCREMENT de tabela `conversas`
+--
+ALTER TABLE `conversas`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+
+--
 -- AUTO_INCREMENT de tabela `eventos`
 --
 ALTER TABLE `eventos`
@@ -517,7 +693,7 @@ ALTER TABLE `eventos`
 -- AUTO_INCREMENT de tabela `grupos`
 --
 ALTER TABLE `grupos`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 
 --
 -- AUTO_INCREMENT de tabela `materiais`
@@ -532,10 +708,22 @@ ALTER TABLE `material_avaliacoes`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT de tabela `mensagens`
+--
+ALTER TABLE `mensagens`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
+
+--
+-- AUTO_INCREMENT de tabela `mensagens_grupo`
+--
+ALTER TABLE `mensagens_grupo`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+
+--
 -- AUTO_INCREMENT de tabela `notificacoes`
 --
 ALTER TABLE `notificacoes`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT de tabela `usuario`
@@ -572,6 +760,13 @@ ALTER TABLE `usuario_privacidade`
 --
 
 --
+-- Restrições para tabelas `conversas`
+--
+ALTER TABLE `conversas`
+  ADD CONSTRAINT `conversas_ibfk_1` FOREIGN KEY (`usuario1_id`) REFERENCES `usuario` (`idusuario`) ON DELETE CASCADE,
+  ADD CONSTRAINT `conversas_ibfk_2` FOREIGN KEY (`usuario2_id`) REFERENCES `usuario` (`idusuario`) ON DELETE CASCADE;
+
+--
 -- Restrições para tabelas `eventos`
 --
 ALTER TABLE `eventos`
@@ -598,6 +793,13 @@ ALTER TABLE `grupo_membros`
   ADD CONSTRAINT `grupo_membros_ibfk_2` FOREIGN KEY (`usuario_id`) REFERENCES `usuario` (`idusuario`) ON DELETE CASCADE;
 
 --
+-- Restrições para tabelas `grupo_visualizacoes`
+--
+ALTER TABLE `grupo_visualizacoes`
+  ADD CONSTRAINT `grupo_visualizacoes_ibfk_1` FOREIGN KEY (`grupo_id`) REFERENCES `grupos` (`id`),
+  ADD CONSTRAINT `grupo_visualizacoes_ibfk_2` FOREIGN KEY (`usuario_id`) REFERENCES `usuario` (`idusuario`);
+
+--
 -- Restrições para tabelas `materiais`
 --
 ALTER TABLE `materiais`
@@ -609,6 +811,20 @@ ALTER TABLE `materiais`
 ALTER TABLE `material_avaliacoes`
   ADD CONSTRAINT `material_avaliacoes_ibfk_1` FOREIGN KEY (`material_id`) REFERENCES `materiais` (`id`),
   ADD CONSTRAINT `material_avaliacoes_ibfk_2` FOREIGN KEY (`usuario_id`) REFERENCES `usuario` (`idusuario`);
+
+--
+-- Restrições para tabelas `mensagens`
+--
+ALTER TABLE `mensagens`
+  ADD CONSTRAINT `mensagens_ibfk_1` FOREIGN KEY (`conversa_id`) REFERENCES `conversas` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `mensagens_ibfk_2` FOREIGN KEY (`remetente_id`) REFERENCES `usuario` (`idusuario`) ON DELETE CASCADE;
+
+--
+-- Restrições para tabelas `mensagens_grupo`
+--
+ALTER TABLE `mensagens_grupo`
+  ADD CONSTRAINT `mensagens_grupo_ibfk_1` FOREIGN KEY (`grupo_id`) REFERENCES `grupos` (`id`),
+  ADD CONSTRAINT `mensagens_grupo_ibfk_2` FOREIGN KEY (`remetente_id`) REFERENCES `usuario` (`idusuario`);
 
 --
 -- Restrições para tabelas `usuario_aparencia`
