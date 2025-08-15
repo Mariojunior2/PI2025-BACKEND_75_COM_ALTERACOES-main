@@ -1,35 +1,40 @@
 <?php
 require 'includes/conexao.php';
 
+
+
+
 /**
  * Busca os grupos do usuário atual
  */
 function buscarMeusGrupos($pdo, $usuarioId) {
-    $sql = "SELECT g.*, u.nome AS criador_nome, 
-            (SELECT COUNT(*) FROM grupo_membros WHERE grupo_id = g.id) AS total_membros
+    $sql = "SELECT g.id, g.nome, g.descricao, g.criador_id, 
+                   COUNT(gm.usuario_id) AS total_membros,
+                   MAX(mg.data_envio) AS ultima_mensagem_data
             FROM grupos g
-            JOIN grupo_membros gm ON g.id = gm.grupo_id
-            JOIN usuario u ON g.criador_id = u.idusuario
+            JOIN grupo_membros gm ON gm.grupo_id = g.id
+            LEFT JOIN mensagens_grupo mg ON mg.grupo_id = g.id
             WHERE gm.usuario_id = :usuario_id
-            ORDER BY g.data_criacao DESC";
-    
+            GROUP BY g.id
+            ORDER BY ultima_mensagem_data DESC";
+
     $stmt = $pdo->prepare($sql);
     $stmt->bindValue(':usuario_id', $usuarioId, PDO::PARAM_INT);
     $stmt->execute();
     
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
-
 /**
  * Busca todos os grupos disponíveis
  */
 function buscarTodosGrupos($pdo) {
-    $sql = "SELECT g.*, u.nome AS criador_nome, 
-            (SELECT COUNT(*) FROM grupo_membros WHERE grupo_id = g.id) AS total_membros
+    $sql = "SELECT g.id, g.nome, g.descricao, 
+                   COUNT(gm.usuario_id) AS total_membros
             FROM grupos g
-            JOIN usuario u ON g.criador_id = u.idusuario
+            LEFT JOIN grupo_membros gm ON gm.grupo_id = g.id
+            GROUP BY g.id
             ORDER BY g.data_criacao DESC";
-    
+
     $stmt = $pdo->prepare($sql);
     $stmt->execute();
     
@@ -78,18 +83,15 @@ function participarGrupo($pdo, $grupoId, $usuarioId) {
  * Verificar se usuário está em um grupo
  */
 function estaNoGrupo($pdo, $grupoId, $usuarioId) {
-    $sql = "SELECT COUNT(*) 
-            FROM grupo_membros 
-            WHERE grupo_id = :grupo_id AND usuario_id = :usuario_id";
-    
+    $sql = "SELECT COUNT(*) FROM grupo_membros 
+            WHERE grupo_id = :grupo_id 
+            AND usuario_id = :usuario_id";
     $stmt = $pdo->prepare($sql);
     $stmt->bindValue(':grupo_id', $grupoId, PDO::PARAM_INT);
     $stmt->bindValue(':usuario_id', $usuarioId, PDO::PARAM_INT);
     $stmt->execute();
-    
     return $stmt->fetchColumn() > 0;
 }
-
 /**
  * Participar de um evento
  */

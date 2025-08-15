@@ -14,6 +14,7 @@ $options = [
 
 try {
     $pdo = new PDO($dsn, $user, $pass, $options);
+    $pdo->exec("SET time_zone = '-03:00';");
 } catch (PDOException $e) {
     die('Erro na conexão: ' . $e->getMessage());
 }
