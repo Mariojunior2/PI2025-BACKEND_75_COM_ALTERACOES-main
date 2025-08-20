@@ -1,5 +1,5 @@
 <?php
-
+require './functions/siderbar_functions.php';
 // Não inicia sessão novamente se já estiver ativa
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -12,6 +12,16 @@ if (!$usuarioAtualId) {
     // Redireciona para login se não estiver autenticado
     header('Location: index.php');
     exit;
+}
+
+
+
+
+
+// Contar mensagens não lidas
+$totalMensagensNaoLidas = 0;
+if ($usuarioAtualId) {
+    $totalMensagensNaoLidas = contarMensagensNaoLidas($pdo, $usuarioAtualId);
 }
 
 // Usa dados da sessão para evitar consultas desnecessárias
@@ -58,7 +68,14 @@ $usuarioFoto = $_SESSION['usuario_foto'] ?? 'https://i.pravatar.cc/150?img=56';
   <ul class="nav nav-pills flex-column mb-auto">
     <li><a href="hub.php" class="nav-link mb-2 <?= $currentPage=='hub.php'?'active':'' ?>"><i class="fas fa-home me-2"></i>Início</a></li>
     <li><a href="explorar.php" class="nav-link mb-2 <?= $currentPage=='explorar.php'?'active':'' ?>"><i class="fas fa-compass me-2"></i>Explorar</a></li>
-    <li><a href="chat.php" class="nav-link mb-2 d-flex justify-content-between align-items-center <?= $currentPage=='chat.php'?'active':'' ?>"><span><i class="fas fa-comment me-2"></i>Mensagens</span><span class="badge bg-danger">7</span></a></li>
+    <li>
+      <a href="chat.php" class="nav-link mb-2 d-flex justify-content-between align-items-center <?= $currentPage=='chat.php'?'active':'' ?>">
+        <span><i class="fas fa-comment me-2"></i>Mensagens</span>
+        <?php if ($totalMensagensNaoLidas > 0): ?>
+          <span class="badge bg-danger"><?= $totalMensagensNaoLidas ?></span>
+        <?php endif; ?>
+      </a>
+    </li>
     <li><a href="comunidades.php" class="nav-link mb-2 <?= $currentPage=='comunidades.php'?'active':'' ?>"><i class="fas fa-users me-2"></i>Comunidades</a></li>
 
     <?php foreach($menus as $menu): ?>
