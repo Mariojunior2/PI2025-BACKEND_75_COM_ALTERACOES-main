@@ -38,14 +38,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Obter termo de busca
+
 $termoBusca = isset($_GET['search']) ? trim($_GET['search']) : null;
 
-// Buscar dados do banco
-$tendencias = []; // Mantemos estático por enquanto
-$grupos = buscarGrupos($pdo, $termoBusca, 1, 10);
-$eventos = buscarEventos($pdo, $termoBusca, null, 1, 10);
-$usuarios = buscarUsuarios($pdo, $termoBusca, $usuarioAtualId, 1, 10);
+$tendencias = []; 
+$grupos = buscarGrupos($pdo, $termoBusca, 1, 100);
+$eventos = buscarEventos($pdo, $termoBusca, null, 1, 100);
+$usuarios = buscarUsuarios($pdo, $termoBusca, $usuarioAtualId, 1, 100);
 
 $active_tab = isset($_GET['tab']) ? $_GET['tab'] : 'tendencias';
 $valid_tabs = ['tendencias', 'grupos', 'eventos', 'usuarios'];
