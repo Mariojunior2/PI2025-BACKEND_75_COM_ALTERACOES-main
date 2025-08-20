@@ -20,14 +20,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $msg = $result ? "Você entrou no grupo!" : "Erro ao entrar no grupo";
                 }
                 break;
-                
+
             case 'seguir_usuario':
                 if (isset($_POST['usuario_id']) && $usuarioAtualId) {
                     $result = seguirUsuario($pdo, $usuarioAtualId, $_POST['usuario_id']);
                     $msg = $result ? "Você começou a seguir este usuário!" : "Erro ao seguir usuário";
                 }
                 break;
-                
+
             case 'participar_evento':
                 if (isset($_POST['evento_id']) && $usuarioAtualId) {
                     $result = participarEvento($pdo, $_POST['evento_id'], $usuarioAtualId);
@@ -41,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 $termoBusca = isset($_GET['search']) ? trim($_GET['search']) : null;
 
-$tendencias = []; 
+$tendencias = [];
 $grupos = buscarGrupos($pdo, $termoBusca, 1, 10000);
 $eventos = buscarEventos($pdo, $termoBusca, null, 1, 10000);
 $usuarios = buscarUsuarios($pdo, $termoBusca, $usuarioAtualId, 1, 10000);
@@ -55,6 +55,7 @@ if (!in_array($active_tab, $valid_tabs)) {
 
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -68,8 +69,8 @@ if (!in_array($active_tab, $valid_tabs)) {
             width: 20%;
             position: fixed;
         }
- 
-      
+
+
         .content-wrapper {
             align-self: center;
             margin-left: 260px;
@@ -78,15 +79,16 @@ if (!in_array($active_tab, $valid_tabs)) {
         }
     </style>
 </head>
+
 <body>
     <!-- Sidebar -->
-    <?php include 'includes/sidebar.php'?>
+    <?php include 'includes/sidebar.php' ?>
     <div class="d-flex">
         <!-- Main content -->
         <div class="content-wrapper">
             <div class="container">
                 <header class="header row">
-                    <div class="col align-items-center p-3">    
+                    <div class="col align-items-center p-3">
                         <h1>Explorar</h1>
                     </div>
 
@@ -94,8 +96,8 @@ if (!in_array($active_tab, $valid_tabs)) {
                     <div class="search-container col justify-center search-container-explorar">
                         <form method="GET" action="">
                             <input type="hidden" name="tab" value="<?= $active_tab ?>">
-                            <input type="text" class="search-bar" name="search" placeholder="Buscar..." 
-                                   aria-label="Buscar" value="<?= htmlspecialchars($termoBusca ?? '') ?>">
+                            <input type="text" class="search-bar" name="search" placeholder="Buscar..."
+                                aria-label="Buscar" value="<?= htmlspecialchars($termoBusca ?? '') ?>">
                         </form>
                     </div>
                 </header>
@@ -109,9 +111,7 @@ if (!in_array($active_tab, $valid_tabs)) {
                     <a href="?tab=tendencias" class="tab-link <?= $active_tab === 'tendencias' ? 'active' : '' ?>">
                         <i class="fas fa-chart-line"></i> Tendências
                     </a>
-                    <a href="?tab=grupos" class="tab-link <?= $active_tab === 'grupos' ? 'active' : '' ?>">
-                        <i class="fas fa-users"></i> Grupos
-                    </a>
+               
                     <a href="?tab=eventos" class="tab-link <?= $active_tab === 'eventos' ? 'active' : '' ?>">
                         <i class="far fa-calendar-alt"></i> Eventos
                     </a>
@@ -128,65 +128,9 @@ if (!in_array($active_tab, $valid_tabs)) {
                                 As tendências serão implementadas na próxima versão.
                             </div>
                         </div>
+
                     
-                    <?php elseif ($active_tab === 'grupos'): ?>
-                        <!-- Grupos Tab Content -->
-                        <div class="grupos-container">
-                            <?php foreach ($grupos as $grupo): ?>
-                                <div class="card">
-                                    <div class="card-header">
-                                        <div class="user-profile">
-                                            <div class="avatar">
-                                                <i class="fas fa-users"></i>
-                                            </div>
-                                            <div class="user-info">
-                                                <h2 class="card-title"><?= htmlspecialchars($grupo['nome']) ?></h2>
-                                                <div class="follower-count"><?= $grupo['total_membros'] ?> membros</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="card-body">
-                                        <p class="card-description"><?= htmlspecialchars($grupo['descricao']) ?></p>
-                                        
-                                        <div class="tags-container">
-                                            <?php 
-                                            // Tags fictícias baseadas na descrição
-                                            $tags = [];
-                                            if (stripos($grupo['descricao'], 'banco de dados') !== false) $tags[] = 'Banco de Dados';
-                                            if (stripos($grupo['descricao'], 'IA') !== false || stripos($grupo['descricao'], 'inteligência artificial') !== false) $tags[] = 'IA';
-                                            if (stripos($grupo['descricao'], 'front-end') !== false) $tags[] = 'Frontend';
-                                            if (stripos($grupo['descricao'], 'machine learning') !== false) $tags[] = 'Machine Learning';
-                                            if (stripos($grupo['descricao'], 'tecnologia') !== false) $tags[] = 'Tecnologia';
-                                            
-                                            foreach ($tags as $tag): ?>
-                                                <span class="tag"><?= htmlspecialchars($tag) ?></span>
-                                            <?php endforeach; ?>
-                                        </div>
-                                        
-                                        <div class="card-actionsEvents">
-                                            <?php if ($usuarioAtualId): ?>
-                                                <?php if (estaNoGrupo($pdo, $grupo['id'], $usuarioAtualId)): ?>
-                                                    <button class="btn btn-following w-100" disabled>Já participa</button>
-                                                <?php else: ?>
-                                                    <form method="POST" action="">
-                                                        <input type="hidden" name="action" value="participar_grupo">
-                                                        <input type="hidden" name="grupo_id" value="<?= $grupo['id'] ?>">
-                                                        <button type="submit" class="btn btn-participate w-100">Participar</button>
-                                                    </form>
-                                                <?php endif; ?>
-                                            <?php else: ?>
-                                                <button class="btn btn-participate w-100" disabled>Faça login para participar</button>
-                                            <?php endif; ?>
-                                        </div>
-                                    </div>
-                                </div>
-                            <?php endforeach; ?>
-                            
-                            <?php if (empty($grupos)): ?>
-                                <div class="alert alert-info">Nenhum grupo encontrado.</div>
-                            <?php endif; ?>
-                        </div>
-                    
+
                     <?php elseif ($active_tab === 'eventos'): ?>
                         <!-- Eventos Tab Content -->
                         <div class="eventos-container">
@@ -196,7 +140,7 @@ if (!in_array($active_tab, $valid_tabs)) {
                                         <div>
                                             <h2 class="card-title"><?= htmlspecialchars($evento['titulo']) ?></h2>
                                             <div class="event-date">
-                                                <?= date('d M, Y', strtotime($evento['data_evento'])) ?> • 
+                                                <?= date('d M, Y', strtotime($evento['data_evento'])) ?> •
                                                 <?= date('H:i', strtotime($evento['hora_evento'])) ?>
                                             </div>
                                             <div class="event-location">
@@ -228,12 +172,12 @@ if (!in_array($active_tab, $valid_tabs)) {
                                     </div>
                                 </div>
                             <?php endforeach; ?>
-                            
+
                             <?php if (empty($eventos)): ?>
                                 <div class="alert alert-info">Nenhum evento encontrado.</div>
                             <?php endif; ?>
                         </div>
-                    
+
                     <?php elseif ($active_tab === 'usuarios'): ?>
                         <!-- Usuários Tab Content -->
                         <div class="usuarios-container">
@@ -242,7 +186,14 @@ if (!in_array($active_tab, $valid_tabs)) {
                                     <div class="card-body">
                                         <div class="user-profile">
                                             <div class="avatar">
-                                                <i class="fas fa-user"></i>
+                                                <?php
+                                                // Gerar avatar baseado no nome do usuário
+                                                $nome = urlencode($usuario['nome']);
+                                                $cor = substr(md5($usuario['nome']), 0, 6);
+                                                ?>
+                                                <img src="https://ui-avatars.com/api/?name=<?= $nome ?>&background=<?= $cor ?>&color=fff"
+                                                    alt="<?= htmlspecialchars($usuario['nome']) ?>"
+                                                    class="perfil-avatar-img">
                                             </div>
                                             <div class="user-info">
                                                 <div class="user-name">
@@ -272,7 +223,7 @@ if (!in_array($active_tab, $valid_tabs)) {
                                     </div>
                                 </div>
                             <?php endforeach; ?>
-                            
+
                             <?php if (empty($usuarios)): ?>
                                 <div class="alert alert-info">Nenhum usuário encontrado.</div>
                             <?php endif; ?>
@@ -304,17 +255,17 @@ if (!in_array($active_tab, $valid_tabs)) {
                         e.preventDefault();
                         return;
                     }
-                    
-                    if (this.textContent.trim() === 'Participar' || 
+
+                    if (this.textContent.trim() === 'Participar' ||
                         this.textContent.trim() === 'Seguir') {
-                        
+
                         // Mudar aparência do botão
                         const originalText = this.textContent;
                         this.textContent = originalText === 'Participar' ? 'Solicitado' : 'Seguindo';
                         this.classList.remove('btn-participate');
                         this.classList.add('btn-following');
                         this.disabled = true;
-                        
+
                         // Enviar o formulário após um pequeno delay para dar feedback visual
                         setTimeout(() => {
                             this.closest('form').submit();
@@ -325,4 +276,5 @@ if (!in_array($active_tab, $valid_tabs)) {
         });
     </script>
 </body>
+
 </html>
