@@ -42,9 +42,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $termoBusca = isset($_GET['search']) ? trim($_GET['search']) : null;
 
 $tendencias = []; 
-$grupos = buscarGrupos($pdo, $termoBusca, 1, 100);
-$eventos = buscarEventos($pdo, $termoBusca, null, 1, 100);
-$usuarios = buscarUsuarios($pdo, $termoBusca, $usuarioAtualId, 1, 100);
+$grupos = buscarGrupos($pdo, $termoBusca, 1, 10000);
+$eventos = buscarEventos($pdo, $termoBusca, null, 1, 10000);
+$usuarios = buscarUsuarios($pdo, $termoBusca, $usuarioAtualId, 1, 10000);
 
 $active_tab = isset($_GET['tab']) ? $_GET['tab'] : 'tendencias';
 $valid_tabs = ['tendencias', 'grupos', 'eventos', 'usuarios'];
