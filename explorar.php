@@ -111,7 +111,7 @@ if (!in_array($active_tab, $valid_tabs)) {
                     <a href="?tab=tendencias" class="tab-link <?= $active_tab === 'tendencias' ? 'active' : '' ?>">
                         <i class="fas fa-chart-line"></i> Tendências
                     </a>
-               
+                                
                     <a href="?tab=eventos" class="tab-link <?= $active_tab === 'eventos' ? 'active' : '' ?>">
                         <i class="far fa-calendar-alt"></i> Eventos
                     </a>
