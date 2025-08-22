@@ -1,267 +1,191 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Recursos Educacionais - TydraPI</title>
-    <style>
-        .sidebar {
-            position: fixed;
+<?php
+// Conexão com o banco de dados
+include "includes/conexao.php";
+include "functions/recursos_functions.php";
+include "includes/header.php";
+?>
+
+<style>
+    .sidebar {
+        width: 20%;
+        position: fixed;
+    }
+    
+    /* Filtros em linha */
+    .filtros-inline {
+        display: flex;
+        gap: 15px;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    /* Grupos menores para alinhar bem */
+    .filtro-group {
+        display: flex;
+        flex-direction: column;
+        min-width: 180px;
+    }
+
+    /* Botões de ação */
+    .filtro-acoes {
+        display: flex;
+        gap: 10px;
+        margin-top: 15px;
+    }
+
+    /* Botão secundário estilo "Limpar" */
+    .btn-secondary {
+        background-color: #555;
+        color: white;
+        border: 1px solid #444;
+    }
+    .btn-secondary:hover {
+        background-color: #666;
         }
-        
-    </style>
-    <?php include 'includes/header.php' ?>
-</head>
+</style>
 <body>
-    <?php include 'includes/sidebar.php'?>
+<?php 
+include 'includes/sidebar.php'
+?>
     <div class="content-wrapper">
         <!-- Cabeçalho de recursos -->
         <div class="resources-header">
-            <h2 class="resources-title">Recursos Educacionais</h2>
-            <div class="d-flex align-items-center gap-2">
-                <div class="search-container search-container-education">
-                    <input type="text" class="search-bar" placeholder="Buscar recursos...">
-                    <i class="search-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
-                            <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
-                        </svg>
-                    </i>
-                </div>
-                <button class="filter-button">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-funnel" viewBox="0 0 16 16">
-                        <path d="M1.5 1.5A.5.5 0 0 1 2 1h12a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.128.334L10 8.692V13.5a.5.5 0 0 1-.342.474l-3 1A.5.5 0 0 1 6 14.5V8.692L1.628 3.834A.5.5 0 0 1 1.5 3.5v-2zm1 .5v1.308l4.372 4.858A.5.5 0 0 1 7 8.5v5.306l2-.666V8.5a.5.5 0 0 1 .128-.334L13.5 3.308V2h-11z"/>
-                    </svg>
-                    <span>Filtros</span>
-                </button>
-            </div>
+            <h1 class="h2 fw-bold">Recursos Educacionais</h1>
+
         </div>
 
-        <!-- Seções de filtro -->
-        <div class="row g-3 mb-3">
-            <!-- Filtrar por Nível -->
-            <div class="col-md-3">
-                <div class="filter-card">
-                    <h5>Filtrar por Nível</h5>
-                    <button class="filter-option active">Todos os Níveis</button>
-                    <button class="filter-option">Iniciante</button>
-                    <button class="filter-option">Intermediário</button>
-                    <button class="filter-option">Avançado</button>
-                </div>
-            </div>
-
-            <!-- Filtrar por Assunto -->
-            <div class="col-md-3">
-                <div class="filter-card">
-                    <h5>Filtrar por Assunto</h5>
-                    <button class="filter-option active d-flex justify-content-between align-items-center">
-                        <span>Todos os Assuntos</span>
-                        <span>📄</span>
-                    </button>
-                    <button class="filter-option">Matemática</button>
-                    <button class="filter-option">Física</button>
-                    <button class="filter-option">Programação</button>
-                    <button class="filter-option">Idiomas</button>
-                </div>
-            </div>
-
-            <!-- Formato -->
-            <div class="col-md-3">
-                <div class="filter-card">
-                    <h5>Formato</h5>
-                    <button class="filter-option active">Todos os Formatos</button>
-                    <button class="filter-option">PDF/Documento</button>
-                    <button class="filter-option">Vídeo</button>
-                    <button class="filter-option">Áudio</button>
-                    <button class="filter-option d-flex justify-content-between align-items-center">
-                        <span>Interativo</span>
-                        <span class="format-badge">Open</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Opções -->
-            <div class="col-md-3">
-                <div class="filter-card">
-                    <h5>Opções</h5>
-                    <p class="text-secondary-custom">Ordenar por</p>
-                    <select class="form-select">
-                        <option>Mais recentes</option>
-                        <option>Mais populares</option>
-                        <option>Mais relevantes</option>
-                    </select>
-                    
-                    <div class="form-check mt-3">
-                        <input class="form-check-input" type="checkbox" id="certificacaoCheck">
-                        <label class="form-check-label" for="certificacaoCheck">
-                            Com certificação
-                        </label>
+        <!-- Seção de Filtros Unificada -->
+        <div class="filtros-container" id="filtrosSection">
+            <form method="GET" action="">
+                <div class="filtros-body filtros-inline">
+                    <!-- Filtro por Matéria -->
+                    <div class="filtro-group">
+                        <label class="filtro-label">Matéria</label>
+                        <select class="form-select" name="materia">
+                            <option value="">Todas as matérias</option>
+                            <option value="matematica" <?= $materia === 'matematica' ? 'selected' : '' ?>>Matemática</option>
+                            <option value="fisica" <?= $materia === 'fisica' ? 'selected' : '' ?>>Física</option>
+                            <option value="geografia" <?= $materia === 'geografia'? 'selected' : '' ?>>Geografia</option>
+                            <option value="filosofia" <?= $materia === 'filosofia' ? 'selected' : '' ?>>Filosofia</option>
+                            <option value="historia" <?= $materia === 'historia' ? 'selected' : '' ?>>História</option>
+                            <option value="lingua portuguesa" <?= $materia === 'lingua portuguesa' ? 'selected' : '' ?>>Língua Portuguesa</option>
+                            <option value="ingles" <?= $materia === 'ingles' ? 'selected' : '' ?>>Inglês</option>
+                            <option value="quimica" <?= $materia === 'quimica' ? 'selected' : '' ?>>Química</option>
+                            <option value="sociologia" <?= $materia === 'sociologia' ? 'selected' : '' ?>>Sociologia</option>
+                        </select>
                     </div>
-                    
-                    <div class="d-flex mt-3 gap-2">
-                        <button class="btn-primary action-btn" style="border-radius: 0%;">Grade</button>
-                        <button class="tab-button secondary">Lista</button>
+
+                    <!-- Filtro por Formato -->
+                    <div class="filtro-group">
+                        <label class="filtro-label">Formato</label>
+                        <select class="form-select" name="formato">
+                            <option value="">Todos os formatos</option>
+                            <option value="video" <?= $formato === 'video' ? 'selected' : '' ?>>Vídeo</option>
+                            <option value="documento" <?= $formato === 'documento' ? 'selected' : '' ?>>Documento</option>
+                            <option value="link" <?= $formato === 'link' ? 'selected' : '' ?>>Link</option>
+                        </select>
+                    </div>
+
+                    <!-- Botões -->
+                    <div class="filtro-acoes">
+                        <button type="submit" class=" btn-primary">Aplicar</button>
+                        <button type="button" class=" btn-primary" onclick="window.location.href='?'">Limpar</button>
                     </div>
                 </div>
-            </div>
-        </div>
-
-        <!-- Informações -->
-        <div class="row mb-3">
-            <div class="col-md-12">
-                <div class="filter-card">
-                    <h5>Informações</h5>
-                    <p class="info-text">
-                        Recursos educacionais para aprimorar seus estudos e conhecimentos. Use os filtros para encontrar exatamente o que você está procurando.
-                    </p>
-                    
-                    <div class="categories-container">
-                        <div class="category-item">
-                            <div class="resource-icon icon-blue">
-                            <span>📚</span>
-                            </div>
-                            <p class="category-text">Material<br>de Estudo</p>
-                        </div>
-                        
-                        <div class="category-item">
-                            <div class="resource-icon icon-red">
-                                <span>🎬</span>
-                            </div>
-                            <p class="category-text">Vídeo<br>Aulas</p>
-                        </div>
-                        
-                        <div class="category-item">
-                            <div class="resource-icon icon-yellow">
-                                <span>🎯</span>
-                            </div>
-                            <p class="category-text">Exercícios</p>
-                        </div>
-                        
-                        <div class="category-item">
-                            <div class="resource-icon icon-green">
-                                <span>📝</span>
-                            </div>
-                            <p class="category-text">Dicas</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Barra de Tabs -->
-        <div class="footer-tabs mb-3 align-items-center"  role="tablist" aria-label="Categorias de recursos">
-    
-            <button class="footer-tab" role="tab" aria-selected="false" tabindex="-1">
-                <i class="bi bi-book me-1" aria-hidden="true"></i>
-                <span>Material de Estudo</span>
-            </button>
-            <button class="footer-tab" role="tab" aria-selected="false" tabindex="-1">
-                <i class="bi bi-camera-video me-1" aria-hidden="true"></i>
-                <span>Vídeo Aulas</span>
-            </button>
-            <button class="footer-tab" role="tab" aria-selected="false" tabindex="-1">
-                <i class="bi bi-pencil-square me-1" aria-hidden="true"></i>
-                <span>Exercícios</span>
-            </button>
-            <button class="footer-tab" role="tab" aria-selected="false" tabindex="-1">
-                <i class="bi bi-journal-text me-1" aria-hidden="true"></i>
-                <span>Dicas</span>
-            </button>
-            <button class="footer-tab" role="tab" aria-selected="false" tabindex="-1">
-                <i class="bi bi-question-circle me-1" aria-hidden="true"></i>
-                <span>Quizzes</span>
-            </button>
-
-            <button class="footer-tab" role="tab" aria-selected="false" tabindex="-1">
-                <i class="bi bi-journal-bookmark me-1" aria-hidden="true"></i>
-                <span>Cursos</span>
-            </button>
-            <button class="footer-tab" role="tab" aria-selected="false" tabindex="-1">
-                <i class="bi bi-bar-chart me-1" aria-hidden="true"></i>
-                <span>Apresentações</span>
-            </button>
-            <button class="footer-tab" role="tab" aria-selected="false" tabindex="-1">
-                <i class="bi bi-file-earmark-text me-1" aria-hidden="true"></i>
-                <span>Artigos</span>
-            </button>
+            </form>
         </div>
 
         <!-- Cards de Recursos -->
         <div class="row">
-            <?php
-            $resources = [
-                [
-                    'icon' => 'bi-book',
-                    'icon_color' => 'icon-yellow',
-                    'title' => 'Pomodoro e outras técnicas de foco',
-                    'tags' => ['Técnica', 'Estudo', 'Geral'],
-                    'description' => 'Aprenda a usar o método Pomodoro e outras técnicas para aumentar sua concentração nos estudos.',
-                    'author' => 'Carolina Mendes (Instituto de Produtividade Acadêmica)',
-                    'stats' => ['Produtividade', 'Foco', 'Técnicas de Estudo'],
-                    'views' => '623 visualizações',
-                    'updated' => 'Atualizado em: 2024-03-15'
-                ],
-                [
-                    'icon' => 'bi-file-earmark-text',
-                    'icon_color' => 'icon-green',
-                    'title' => 'Artigo Científico: Impactos da IA na Educação',
-                    'tags' => ['Artigo Científico', 'Acadêmico', 'IA'],
-                    'description' => 'Artigo acadêmico sobre como a Inteligência Artificial está transformando os métodos educacionais.',
-                    'author' => 'Prof. Dr. Gustavo Mendes (Instituto de Pesquisas Educacionais)',
-                    'stats' => ['IA', 'Educação', 'Pesquisa'],
-                    'views' => '285 visualizações',
-                    'updated' => 'Atualizado em: 2024-03-05'
-                ]
-            ];
-            foreach ($resources as $resource) {
-                echo '<div class="col-md-6 mb-3">';
-                echo '<div class="resource-card">';
-                echo '<div class="card-header">';
-                echo '<div class="card-icon ' . $resource["icon_color"] . '">';
-                echo '<i class="bi ' . $resource["icon"] . '" aria-hidden="true"></i>';
-                echo '</div>';
-                echo '<div class="card-title-area">';
-                echo '<h3 class="card-title">' . $resource["title"] . '</h3>';
-                echo '<div>';
-                foreach ($resource["tags"] as $tag) {
-                    echo '<span class="tag">' . $tag . '</span>';
-                }
-                echo '</div>';
-                echo '</div>';
-                echo '</div>';
-                echo '<p class="card-description">' . $resource["description"] . '</p>';
-                echo '<p class="card-author">Autor: ' . $resource["author"] . '</p>';
-                echo '<div class="card-stats">';
-                foreach ($resource["stats"] as $stat) {
-                    echo '<span>' . $stat . '</span>';
-                }
-                echo '</div>';
-                echo '<div class="card-stats">';
-                echo '<span>' . $resource["views"] . '</span>';
-                echo '<span>' . $resource["updated"] . '</span>';
-                echo '</div>';
-                echo '<div class="card-divider"></div>';
-                echo '<div class="card-actions">';
-                echo '<button class="action-btn btn-primary">Abrir</button>';
-                echo '<div class="icon-buttons">';
-                echo '<button class="icon-btn">';
-                echo '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-download" viewBox="0 0 16 16">';
-                echo '<path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>';
-                echo '<path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>';
-                echo '</svg>';
-                echo '</button>';
-                echo '<button class="icon-btn">';
-                echo '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-share" viewBox="0 0 16 16">';
-                echo '<path d="M13.5 1a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM11 2.5a2.5 2.5 0 1 1 .603 1.628l-6.718 3.12a2.499 2.499 0 0 1 0 1.504l6.718 3.12a2.5 2.5 0 1 1-.488.876l-6.718-3.12a2.5 2.5 0 1 1 0-3.256l6.718-3.12A2.5 2.5 0 0 1 11 2.5zm-8.5 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm11 5.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3z"/>';
-                echo '</svg>';
-                echo '</button>';
-                echo '</div>';
-                echo '</div>';
-                echo '</div>';
-                echo '</div>';
-            }
-            ?>
+            <?php if (count($recursos) > 0): ?>
+                <?php foreach ($recursos as $recurso): 
+                    // Determinar ícone e cor com base no tipo
+                    $icon_class = '';
+                    $icon_color_class = '';
+                    
+                    switch ($recurso['tipo']) {
+                        case 'documento':
+                            $icon_class = 'bi-file-earmark-text';
+                            $icon_color_class = 'icon-green';
+                            break;
+                        case 'video':
+                            $icon_class = 'bi-camera-video';
+                            $icon_color_class = 'icon-red';
+                            break;
+                        case 'link':
+                            $icon_class = 'bi-link-45deg';
+                            $icon_color_class = 'icon-blue';
+                            break;
+                        default:
+                            $icon_class = 'bi-file-earmark';
+                            $icon_color_class = 'icon-yellow';
+                    }
+                    
+                    // Escapar dados para JavaScript
+                    $js_url = htmlspecialchars($recurso['url'], ENT_QUOTES, 'UTF-8');
+                    $js_title = htmlspecialchars($recurso['titulo'], ENT_QUOTES, 'UTF-8');
+                ?>
+                    <div class="col-md-6 mb-3">
+                        <div class="resource-card">
+                            <div class="card-header">
+                                <div class="card-icon <?= $icon_color_class ?>">
+                                    <i class="bi <?= $icon_class ?>"></i>
+                                </div>
+                                <div class="card-title-area">
+                                    <h3 class="card-title"><?= htmlspecialchars($recurso['titulo']) ?></h3>
+                                    <div>
+                                        <span class="tag"><?= htmlspecialchars($recurso['tipo']) ?></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="card-description"><?= htmlspecialchars($recurso['descricao']) ?></p>
+                            <p class="card-author">Autor: <?= htmlspecialchars($recurso['autor']) ?></p>
+                            <p class="card-description">Matéria: <?= htmlspecialchars($recurso['materia']) ?></p>
+                            <div class="card-stats">
+                                <span>Publicado em: <?= date('d/m/Y', strtotime($recurso['data_publicacao'])) ?></span>
+                            </div>
+                            <div class="card-divider"></div>
+                            <div class="card-actions">
+                                <button class="action-btn btn-primary" onclick="window.open('<?= $js_url ?>', '_blank')">Abrir</button>
+                            </div>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            <?php else: ?>
+                <div class="col-md-12">
+                    <div class="sem-resultados">
+                        <p>Nenhum recurso encontrado com os filtros selecionados.</p>
+                        <p>Tente ajustar os critérios de busca.</p>
+                    </div>
+                </div>
+            <?php endif; ?>
         </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+    function shareResource(url, title) {
+        if (navigator.share) {
+            navigator.share({
+                title: title,
+                url: url
+            })
+            .catch(console.error);
+        } else {
+            // Fallback para copiar link
+            navigator.clipboard.writeText(url).then(() => {
+                alert('Link copiado: ' + url);
+            });
+        }
+    }
+    
+    function toggleFiltros() {
+        const filtrosSection = document.getElementById('filtrosSection');
+        if (filtrosSection.style.display === 'none') {
+            filtrosSection.style.display = 'block';
+        } else {
+            filtrosSection.style.display = 'none';
+        }
+    }
+    </script>
 </body>
 </html>
