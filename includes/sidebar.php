@@ -84,13 +84,9 @@ $usuarioFoto = $_SESSION['usuario_foto'] ?? 'https://i.pravatar.cc/150?img=56';
         <li class="has-submenu active">
           <a href="<?= $menu['link'] ?>" class="nav-link d-flex justify-content-between align-items-center submenu-toggle active">
             <span><i class="fas fa-<?= $menu['icon'] ?> me-2"></i><?= $menu['label'] ?></span>
-            <i class="fas fa-chevron-down submenu-icon"></i>
+
           </a>
-          <ul class="sub-menu">
-            <?php foreach($menu['items'] as $item): ?>
-              <li><a href="<?= $item['href'] ?>" class="nav-link sub-link <?= $currentPage==basename($item['href'])?'active':'' ?>"><i class="fas fa-<?= $item['icon'] ?> me-2"></i><?= $item['label'] ?></a></li>
-            <?php endforeach; ?>
-          </ul>
+
         </li>
       <?php else: ?>
         <li>
