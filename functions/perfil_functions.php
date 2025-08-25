@@ -125,7 +125,7 @@ function buscarConexoesUsuario($pdo, $usuarioId) {
             JOIN usuario_seguidores us ON u.idusuario = us.seguido_id
             WHERE us.seguidor_id = :usuario_id
             ORDER BY us.data_seguimento DESC
-            LIMIT 4";
+            LIMIT 1000";
     
     $stmt = $pdo->prepare($sql);
     $stmt->bindValue(':usuario_id', $usuarioId, PDO::PARAM_INT);
@@ -140,7 +140,7 @@ function buscarConectadosAoUsuario($pdo, $usuarioId) {
             JOIN usuario_seguidores us ON u.idusuario = us.seguidor_id
             WHERE us.seguido_id = :usuario_id
             ORDER BY us.data_seguimento DESC
-            LIMIT 4";
+            LIMIT 1000";
     
     $stmt = $pdo->prepare($sql);
     $stmt->bindValue(':usuario_id', $usuarioId, PDO::PARAM_INT);
